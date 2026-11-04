@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="300" viewBox="0 0 440 300" fill="none">
+<ellipse cx="233" cy="271" rx="172" ry="14" fill="#cfddc3"/>
+<circle cx="241" cy="137" r="115" fill="#dce9d0"/>
+<circle cx="340" cy="53" r="23" fill="#f9d78a"/>
+<path d="M61 238c-17-28-20-52-9-66 26 4 45 26 43 63" fill="#72997a"/>
+<path d="M80 260c0-29-6-50-20-72" stroke="#3d7150" stroke-width="3" stroke-linecap="round"/>
+<path d="M332 236c-12-33-6-56 18-72 11 26 6 52-12 70" fill="#6b956a"/>
+<path d="M327 263c1-31 7-56 20-80" stroke="#3d7150" stroke-width="3" stroke-linecap="round"/>
+<rect x="143" y="75" width="155" height="188" rx="16" transform="rotate(12 143 75)" fill="#8aa382"/>
+<rect x="127" y="68" width="155" height="188" rx="16" transform="rotate(-7 127 68)" fill="#fffdf3" stroke="#d3deca" stroke-width="2"/>
+<rect x="143" y="90" width="108" height="24" rx="12" transform="rotate(-7 143 90)" fill="#eef3e6"/>
+<path d="M159 101l4 4 6-8" stroke="#4e7758" stroke-width="2" stroke-linecap="round"/>
+<text x="177" y="105" transform="rotate(-7 177 105)" font-family="Arial,sans-serif" font-size="10" font-weight="600" fill="#4e7758">A little every day</text>
+<path d="M204 186c-3-30-13-45-30-53-9 25 2 43 30 53" fill="#6e9b66"/>
+<path d="M205 177c3-26 14-43 34-49 6 26-8 46-34 49" fill="#a9c383"/>
+<path d="M205 198c-1-18-4-32-11-44" stroke="#3e6949" stroke-width="3" stroke-linecap="round"/>
+<path d="M181 199h49l-7 29h-33l-9-29Z" fill="#df9872"/>
+<path d="M180 198h52" stroke="#bd7e5c" stroke-width="5" stroke-linecap="round"/>
+<path d="M188 199h9l3 29h-10l-2-29Z" fill="#eaaa83"/>
+<rect x="285" y="195" width="90" height="56" rx="12" transform="rotate(8 285 195)" fill="#fffdf3" stroke="#d6dfcc" stroke-width="2"/>
+<circle cx="308" cy="224" r="11" fill="#e7efd9"/><path d="M303 224l4 4 7-8" stroke="#4e7758" stroke-width="2" stroke-linecap="round"/>
+<path d="M329 223l26 4m-27 3 19 3" stroke="#b7c7aa" stroke-width="4" stroke-linecap="round"/>
+<path d="M98 96v16m-8-8h16M322 122v12m-6-6h12" stroke="#a6b38d" stroke-width="3" stroke-linecap="round"/>
+<circle cx="111" cy="173" r="4" fill="#d79a68"/><circle cx="286" cy="37" r="4" fill="#9ab37e"/>
+<path d="M75 48c11-7 21-7 29 0" stroke="#95b190" stroke-width="2" stroke-linecap="round"/>
+</svg>
