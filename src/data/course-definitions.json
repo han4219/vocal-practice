@@ -1,0 +1,122 @@
+[
+  {
+    "id": "A1.01G",
+    "title": "Ngữ pháp khởi đầu",
+    "subtitle": "Những viên gạch đầu tiên",
+    "category": "grammar",
+    "color": "peach",
+    "icon": "BookOpen"
+  },
+  {
+    "id": "A2.02G",
+    "title": "Ngữ pháp nền tảng",
+    "subtitle": "Hiểu đúng, dùng tự tin",
+    "category": "grammar",
+    "color": "sage",
+    "icon": "Layers"
+  },
+  {
+    "id": "A3.03G",
+    "title": "Ngữ pháp mở rộng",
+    "subtitle": "Nâng tầm cách diễn đạt",
+    "category": "grammar",
+    "color": "lavender",
+    "icon": "Sparkles"
+  },
+  {
+    "id": "A4.04G",
+    "title": "Ngữ pháp chuyên sâu",
+    "subtitle": "Làm chủ những cấu trúc khó",
+    "category": "grammar",
+    "color": "blue",
+    "icon": "GraduationCap"
+  },
+  {
+    "id": "B1.01",
+    "title": "Lắng nghe từ đầu",
+    "subtitle": "Làm quen với tiếng Anh mỗi ngày",
+    "category": "beginner",
+    "color": "sage",
+    "icon": "Headphones"
+  },
+  {
+    "id": "B1.02",
+    "title": "Đọc hiểu cơ bản",
+    "subtitle": "Khám phá thế giới qua câu chữ",
+    "category": "beginner",
+    "color": "peach",
+    "icon": "BookOpen"
+  },
+  {
+    "id": "B2.03",
+    "title": "Lắng nghe tự tin",
+    "subtitle": "Bắt nhịp những cuộc hội thoại",
+    "category": "intermediate",
+    "color": "blue",
+    "icon": "Headphones"
+  },
+  {
+    "id": "B2.04",
+    "title": "Đọc hiểu mở rộng",
+    "subtitle": "Thêm góc nhìn, thêm vốn từ",
+    "category": "intermediate",
+    "color": "lavender",
+    "icon": "BookOpen"
+  },
+  {
+    "id": "B2.05",
+    "title": "Viết điều bạn nghĩ",
+    "subtitle": "Diễn đạt ý tưởng thật rõ ràng",
+    "category": "intermediate",
+    "color": "peach",
+    "icon": "PenLine"
+  },
+  {
+    "id": "B2.06",
+    "title": "Nói thật tự nhiên",
+    "subtitle": "Để mỗi cuộc trò chuyện dễ hơn",
+    "category": "intermediate",
+    "color": "sage",
+    "icon": "MessagesSquare"
+  },
+  {
+    "id": "B3.07",
+    "title": "Luyện nghe chuyên sâu",
+    "subtitle": "Thử thách đôi tai của bạn",
+    "category": "advanced",
+    "color": "blue",
+    "icon": "Headphones"
+  },
+  {
+    "id": "B3.08",
+    "title": "Đọc hiểu chuyên sâu",
+    "subtitle": "Chinh phục những chủ đề mới",
+    "category": "advanced",
+    "color": "lavender",
+    "icon": "BookOpen"
+  },
+  {
+    "id": "B3.09",
+    "title": "Viết chuyên sâu",
+    "subtitle": "Chọn từ chính xác và tinh tế",
+    "category": "advanced",
+    "color": "peach",
+    "icon": "PenLine"
+  },
+  {
+    "id": "B3.10",
+    "title": "Giao tiếp chuyên sâu",
+    "subtitle": "Tự tin nói điều mình muốn",
+    "category": "advanced",
+    "color": "sage",
+    "icon": "MessagesSquare"
+  },
+  {
+    "id": "everyday",
+    "title": "Nhịp sống mỗi ngày",
+    "subtitle": "25 cụm từ nhỏ, dùng được ngay",
+    "category": "everyday",
+    "color": "sage",
+    "icon": "Sprout"
+  }
+]

@@ -46,7 +46,7 @@ Sau khi đã có `package-lock.json`, có thể dùng `npm ci` cho các lần c�
 
 Bàn phím trong flashcard khi không đặt tiêu điểm vào nút/ô nhập: `Space` để lật, `1` chưa nhớ, `2` nhớ rồi, `←` / `→` đi tới/lùi ngay cả khi chưa đánh giá; thẻ đã đánh giá giữ kết quả khi quay lại, không lưu trùng lượt. Có nút thao tác đầy đủ trên điện thoại. `Esc` đóng hộp xem từ hoặc menu.
 
-Flashcard trong mỗi khóa được chia thành nhóm cố định tối đa 20 từ, giữ thứ tự để có thể đi tới/lùi và học lại cả nhóm hoặc chỉ từ chưa học. Nhóm cuối có thể ít hơn 20 từ. Nhóm được tạo theo thứ tự dữ liệu hiện tại; thêm/bớt từ khi cập nhật nguồn có thể thay đổi ranh giới nhóm, nhưng tiến độ từng ID từ vẫn giữ. Mỗi phiên kiểm tra lấy tối đa số từ bằng mục tiêu ngày, ưu tiên từ đến hạn, tiếp đến từ mới, rồi từ đã học. Số từ trong mục tiêu mỗi ngày là **số mục từ khác nhau đã ôn**, không cộng lặp khi ôn nhiều lần cùng một từ. Chuỗi ngày học dùng ngày theo giờ địa phương của thiết bị.
+Flashcard trong mỗi khóa được chia thành nhóm cố định tối đa 20 từ, giữ thứ tự để có thể đi tới/lùi và học lại cả nhóm hoặc chỉ từ chưa học. Nhóm cuối có thể ít hơn 20 từ. Từ, nhóm và vị trí trong nhóm được lưu trong Supabase. Mở lại cùng nhóm luôn có cùng danh sách và thứ tự; chọn nhóm được giữ trong URL, ví dụ `#course/B1.02/2`. Bài luyện tập có bộ chọn nhóm và dùng đầy đủ danh sách nhóm đó, không lấy mẫu ngẫu nhiên theo mục tiêu ngày. Cập nhật nguồn chỉ thêm nhóm mới; các nhóm cũ, kể cả nhóm cuối chưa đủ 20 từ, giữ nguyên thành viên. Từ đã gắn vào nhóm nhưng bị xóa ở nguồn vẫn được giữ trong bản chụp để không mất nội dung và tiến độ. Danh sách ôn cá nhân theo ngày đến hạn vẫn thay đổi theo kết quả học. Số từ trong mục tiêu mỗi ngày là **số mục từ khác nhau đã ôn**, không cộng lặp khi ôn nhiều lần cùng một từ. Chuỗi ngày học dùng ngày theo giờ địa phương của thiết bị.
 
 ## 3. Dữ liệu thật từ Google Sheets
 
@@ -59,7 +59,7 @@ Nguồn: [Vocabulary cần nhớ — tab Từ vựng, gid=0](https://docs.google
 - Tổng cộng **7.671 flashcard**, gồm 14 khóa nguồn và một bộ mở rộng “Nhịp sống mỗi ngày”. Một mục có thể thuộc nhiều khóa nên tổng số từ ở các khóa có thể lớn hơn tổng kho.
 - Tất cả mục nguồn hiện có IPA, nghĩa và ví dụ: không có trường bắt buộc nào cần bịa dữ liệu để lấp chỗ trống. IPA và ví dụ nguồn được bảo toàn; đây là kiểm tra đủ trường, không phải kiểm chứng ngôn ngữ toàn bộ 7.646 mục.
 
-Dữ liệu được đóng gói cùng bản build, tải một lần từ tệp JSON cùng website. **Không cần quyền truy cập Google Sheets hoặc khóa API để học.** Không có truy vấn Google Sheets trong thời gian học. CSV gốc, đường dẫn audio nguồn và bản dịch được giữ lại để đối chiếu; nút nghe mặc định dùng Web Speech API thay vì audio eVSTEP có thể yêu cầu đăng nhập.
+Khi có cấu hình Supabase, ứng dụng tải kho từ và nhóm cố định từ database một lần khi mở trang. Bản chụp cùng website được dùng khi chưa cấu hình hoặc kết nối thất bại. **Không cần quyền truy cập Google Sheets hoặc khóa API để học.** Không có truy vấn Google Sheets trong thời gian học. CSV gốc, đường dẫn audio nguồn và bản dịch được giữ lại để đối chiếu; nút nghe mặc định dùng Web Speech API thay vì audio eVSTEP có thể yêu cầu đăng nhập.
 
 Cấu trúc mỗi mục:
 
@@ -78,10 +78,13 @@ Cho phép đọc bảng bằng đường liên kết, rồi chạy:
 
 ```bash
 npm run sync:vocab
+# Áp dụng supabase/seeds/003_catalog.sql trong Supabase SQL Editor để xuất bản nội dung mới.
 npm test
 npm run build
 npm run deploy
 ```
+
+Script tự giữ nguyên ánh xạ nhóm trong `src/data/course-groups.json`, tạo nhóm mới cho từ mới và sinh tệp `supabase/seeds/003_catalog.sql`. Tệp SQL chỉ được chủ project chạy; ứng dụng không có quyền sửa nhóm.
 
 Script chỉ **đọc** tab `Từ vựng`, không chỉnh sửa Google Sheets. Script kiểm tra header, cập nhật bản chụp và tự bỏ qua cụm từ bổ sung nếu đã xuất hiện trong nguồn mới. Có thể tái tạo dữ liệu từ CSV đã lưu mà không tải lại:
 
@@ -202,3 +205,17 @@ voca practice/
 - Tệp dữ liệu nguồn và bản build sẽ đọc được công khai khi đưa repository/website lên public. Chỉ đưa dữ liệu bạn được phép sử dụng vào repository.
 - Fonts tải từ Google Fonts; có phông hệ thống dự phòng. SVG, mã và dữ liệu đều nằm trong dự án. Website chưa cài service worker nên không cam kết mở offline hoàn toàn.
 - Giao diện và phương pháp ôn lấy cảm hứng từ [Mochi Web](https://learn.mochidemy.com/learn/1) và [5 cấp độ ghi nhớ](https://mochidemy.com/blog/mochimochi-web/); thiết kế, minh họa và lịch ôn đơn giản của dự án này được xây riêng, không sao chép tài nguyên hay thuật toán của Mochi.
+
+
+## Nhóm từ cố định trong database
+
+Chạy `supabase/migrations/002_fixed_catalog.sql`, rồi `supabase/seeds/003_catalog.sql` một lần trong SQL Editor. Dữ liệu học tập ở `voca_profiles` và `voca_events` không bị thay đổi. `voca_get_catalog()` trả toàn bộ nội dung và thứ tự chỉ bằng một lần gọi, không bị cắt ở giới hạn 1.000 hàng của truy vấn bảng thông thường.
+
+- `voca_vocabulary`: nội dung từ và thứ tự trong kho.
+- `voca_courses`: danh mục khóa học theo thứ tự cố định.
+- `voca_word_groups`: mã nhóm và số nhóm trong khóa.
+- `voca_group_words`: ID từ và vị trí 1–20 trong nhóm; cùng một ID từ chỉ xuất hiện một lần trong một khóa.
+
+Khách và người đăng nhập đều chỉ được đọc danh mục công khai này; không có quyền sửa nhóm hoặc gọi hàm nhập nội dung. Tiến độ cá nhân vẫn giữ phân quyền theo tài khoản. Khi không tải được Supabase, trang dùng bản chụp cùng ánh xạ cố định đóng gói trong website và hiển thị thông báo.
+
+Sau khi sửa dữ liệu nguồn, `npm run sync:vocab` sẽ chuẩn bị tệp seed mới. Có thể chạy `npm run catalog:prepare` để tái tạo seed từ dữ liệu có sẵn mà không tải lại Sheets. Hàm nhập từ chối mọi thay đổi thành viên/thứ tự của nhóm cũ; chạy lại cùng dữ liệu không tạo trùng từ hay nhóm. Cần tải trang lại để nhận nội dung mới vừa xuất bản; danh sách không tự đổi giữa một phiên học.

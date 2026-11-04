@@ -49,6 +49,7 @@ if (unresolved.length) {
   await writeFile(new URL('enrichment-needed.json', root), JSON.stringify(unresolved, null, 2));
   throw new Error(`${unresolved.length} entries need editorial enrichment; see src/data/enrichment-needed.json. Snapshot preserved; no invented IPA/examples.`);
 }
+const importedSourceEntries = vocabulary.length;
 const additions = JSON.parse(await readFile(new URL('additions.json', root), 'utf8'));
 const existing = new Set(vocabulary.map(v => v.word.toLowerCase()));
 let added = 0;
@@ -57,10 +58,24 @@ for (const [word, ipa, pos, meaning, example, translation] of additions) {
   vocabulary.push({ id: id(word, meaning, pos), word, ipa, pos, meaning, meaningLanguage: 'vi', example, translation, courses: ['everyday'], source: 'editorial', audio: '', enrichedFields: [] });
   existing.add(word.toLowerCase()); added++;
 }
+// Preserve entries referenced by an existing lesson even if the Sheet removes them.
+// New entries are appended as new groups by prepare-catalog; no existing group shifts.
+let archivedEntries = 0;
+try {
+  const manifest = JSON.parse(await readFile(new URL('course-groups.json', root), 'utf8'));
+  const previous = JSON.parse(await readFile(new URL('vocabulary.json', root), 'utf8'));
+  const assigned = new Set(manifest.courses.flatMap(c => c.groups.flatMap(g => g.wordIds)));
+  const incoming = new Set(vocabulary.map(w => w.id));
+  for (const word of previous) if (assigned.has(word.id) && !incoming.has(word.id)) {
+    vocabulary.push({ ...word, archived: true }); archivedEntries++;
+  }
+} catch (error) { if (error.code !== 'ENOENT') throw error; }
 if (new Set(vocabulary.map(v => v.id)).size !== vocabulary.length) throw new Error('Duplicate word/sense IDs; snapshot preserved.');
 const courseNames = new Map(rows.flatMap(r => (r['Khóa học nguồn'] || '').split(/\s*;\s*/)).filter(Boolean).map(s => [slug(s), s.split(' - ').slice(1).join(' - ')]));
-const metadata = { sourceUrl: sourceUrl.split('/gviz')[0] + '/edit?gid=0', sourceTitle: 'Vocabulary cần nhớ', sourceSheet: 'Từ vựng', importedAt: new Date().toISOString(), sourceEntries: vocabulary.length - added, uniqueSourceWords: new Set(rows.map(r => r['Từ / cụm từ']?.trim().toLowerCase())).size, addedEntries: added, totalEntries: vocabulary.length, courseNames: Object.fromEntries(courseNames) };
+const metadata = { sourceUrl: sourceUrl.split('/gviz')[0] + '/edit?gid=0', sourceTitle: 'Vocabulary cần nhớ', sourceSheet: 'Từ vựng', importedAt: new Date().toISOString(), sourceEntries: importedSourceEntries, archivedEntries, uniqueSourceWords: new Set(rows.map(r => r['Từ / cụm từ']?.trim().toLowerCase())).size, addedEntries: added, totalEntries: vocabulary.length, courseNames: Object.fromEntries(courseNames) };
 await writeFile(new URL('vocabulary.json', root), JSON.stringify(vocabulary));
 await writeFile(new URL('metadata.json', root), JSON.stringify(metadata, null, 2));
 if (!offline) await writeFile(new URL('source.csv', root), raw);
 console.log(`Imported ${metadata.sourceEntries} source entries + ${added} new phrases = ${vocabulary.length}. All required fields complete.`);
+
+await import('./prepare-catalog.mjs');

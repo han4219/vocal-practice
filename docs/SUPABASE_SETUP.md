@@ -24,7 +24,8 @@ Nguồn: [Supabase Auth](https://supabase.com/docs/guides/auth/passwords), [RLS]
 1. Mở **SQL Editor → New query**.
 2. Dán toàn bộ tệp `supabase/migrations/001_learning.sql` của dự án.
 3. Nhấn **Run** bằng tài khoản chủ project.
-4. Xác nhận có bảng `voca_profiles`, `voca_events` và hàm `voca_apply_operation` trong schema `public`.
+4. Chạy tiếp `supabase/migrations/002_fixed_catalog.sql`, sau đó `supabase/seeds/003_catalog.sql` để lưu kho từ và 511 nhóm cố định. Đây là dữ liệu công khai của bài học, tách biệt với tiến độ riêng.
+5. Xác nhận có bảng `voca_profiles`, `voca_events` và hàm `voca_apply_operation` trong schema `public`.
 
 Script tạo RLS: mỗi tài khoản chỉ đọc bản ghi có `user_id` của chính mình. Client không được cập nhật/xóa bảng trực tiếp; mọi thay đổi đi qua hàm transaction xác định UID từ phiên đăng nhập. Khóa UUID của mỗi thao tác đảm bảo gửi lại sau lỗi mạng không cộng trùng lượt học. Có thể chạy lại script mà không xóa dữ liệu cũ.
 
@@ -105,3 +106,12 @@ Nếu hai biến chưa được điền, website vẫn hoạt động ở chế 
 - Hiện snapshot mỗi người dùng giới hạn 8 MB trong hàm để đồng nhất với giới hạn nhập backup. Lịch sử đầy đủ nằm riêng trong `voca_events`; với quy mô lớn hơn có thể tách tiếp snapshot thành các bảng từng từ/ngày.
 
 Kiểm thử database dùng PostgreSQL trong bộ nhớ qua PGlite; không kết nối hoặc thay đổi database production. Luồng đăng nhập/email/realtime của Supabase thật vẫn cần chạy kiểm tra sau khi có project và cấu hình.
+
+
+## Cập nhật kho từ và nhóm cố định
+
+Kho từ học từ `voca_get_catalog()` trong Supabase, với 4 bảng `voca_vocabulary`, `voca_courses`, `voca_word_groups`, `voca_group_words`. Tiến độ riêng không được trả về qua API này.
+
+`npm run sync:vocab` (hoặc `npm run catalog:prepare` nếu không tải Sheets) tạo lại `supabase/seeds/003_catalog.sql`. Chạy seed bằng tài khoản quản trị trong SQL Editor rồi deploy mã nguồn nếu thay đổi giao diện/bản chụp. Từ mới chỉ thêm vào nhóm mới, không lấp nhóm cũ hay đẩy vị trí. Đừng xóa `src/data/course-groups.json` để chia lại nhóm. Từ bị bỏ khỏi Sheet nhưng đã có trong nhóm được giữ để bảo toàn nội dung và tiến độ.
+
+API danh mục là chỉ đọc với cả `anon` và `authenticated`; hàm nhập nội dung chỉ chủ database được chạy. Lớp kiểm tra trong database từ chối đổi danh sách/thứ tự nhóm cũ, nên nhập lại seed không làm mất tính cố định.

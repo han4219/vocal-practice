@@ -32,7 +32,7 @@ export default function StudySession({ session, state, review, seen, favorite, s
     const correct = isFlash ? value !== 'again' : question.type==='choice' ? value===word.meaning : normalizeAnswer(value)===normalizeAnswer(word.word);
     const result = !correct ? 'again' : card.hinted||card.retry ? 'assisted' : 'good';
     dispatch({type:'grade',correct,answer:value});
-    review(word.id,result,{mode:session.mode,answer:String(value),correct,hinted:card.hinted,retry:card.retry,sessionId:session.id,courseId:session.courseId||null,groupTitle:session.title});
+    review(word.id,result,{mode:session.mode,answer:String(value),correct,hinted:card.hinted,retry:card.retry,sessionId:session.id,courseId:session.courseId||null,groupTitle:session.title,groupId:session.groupId||null,groupNumber:session.groupNumber||null});
   };
   const go = next => { if(next>=0&&next<session.words.length){setHintOpen(false);dispatch({type:'go',index:next});} };
   const next = () => index===session.words.length-1 ? dispatch({type:'finish'}) : go(index+1);
@@ -55,11 +55,11 @@ export default function StudySession({ session, state, review, seen, favorite, s
     <p>Đã đánh giá {assessed}/{session.words.length} từ trong “{session.title}”.</p>
     <div className="results-summary"><div><strong>{firstCorrect}</strong><span>Tự nhớ ngay lần đầu</span></div><div><strong>{wrong.length}</strong><span>Cần ôn thêm</span></div><div><strong>{unassessed.length}</strong><span>Chưa đánh giá</span></div></div>
     {wrong.length>0&&<div className="wrong-words"><h3>Những từ cần thêm chút thời gian</h3>{wrong.map(w=><div key={w.id}><strong>{w.word}</strong><span>{w.meaning}</span><SoundButton word={w.word} speak={speak}/></div>)}</div>}
-    <div className="flex justify-center gap-3 flex-wrap"><button className="btn outline" onClick={close}>{session.courseId?'Về danh sách nhóm':'Về khu vườn'}</button><button className="btn outline" onClick={()=>dispatch({type:'go',index:0})}>Xem lại các thẻ</button>{(wrong.length>0||unassessed.length>0)&&<button className="btn primary" onClick={()=>restart([...wrong,...unassessed],`Ôn thêm: ${session.title}`,session.mode,{ordered:true,full:true,courseId:session.courseId})}><RotateCcw size={17}/>Luyện các từ cần ôn</button>}</div>
+    <div className="flex justify-center gap-3 flex-wrap"><button className="btn outline" onClick={close}>{session.returnView==='practice'?'Về góc luyện tập':session.courseId?'Về danh sách nhóm':'Về khu vườn'}</button><button className="btn outline" onClick={()=>dispatch({type:'go',index:0})}>Xem lại các thẻ</button>{(wrong.length>0||unassessed.length>0)&&<button className="btn primary" onClick={()=>restart([...wrong,...unassessed],`Ôn thêm: ${session.title}`,session.mode,{ordered:true,full:true,courseId:session.courseId,groupId:session.groupId,groupNumber:session.groupNumber,returnView:session.returnView})}><RotateCcw size={17}/>Luyện các từ cần ôn</button>}</div>
     <p className="fine-print mt-5">Mỗi lượt trả lời được lưu riêng. Xem thẻ hoặc chuyển tới/lùi không làm tăng cấp ghi nhớ.</p>
   </section>;
   return <div className="study-page">
-    <button className="text-button back-link" onClick={close}><ArrowLeft size={17}/>{session.courseId?'Về danh sách nhóm':'Về khu vườn'}</button>
+    <button className="text-button back-link" onClick={close}><ArrowLeft size={17}/>{session.returnView==='practice'?'Về góc luyện tập':session.courseId?'Về danh sách nhóm':'Về khu vườn'}</button>
     <div className="study-heading"><div><span className="eyebrow">{isFlash?'HỌC BẰNG FLASHCARD':question.type==='typing'?'NHỚ VÀ VIẾT LẠI':'CHỌN NGHĨA ĐÚNG'}</span><h1>{session.title}</h1></div><span className="session-count">{index+1}<span> / {session.words.length}</span></span></div>
     <ProgressBar value={assessed/session.words.length*100} label="Tiến độ phiên học"/>
     {isFlash ? <>

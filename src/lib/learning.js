@@ -63,6 +63,7 @@ export function validateState(raw, validIds) {
 }
 
 export function groupsFor(course) {
+  if (Array.isArray(course.groups)) return course.groups;
   return Array.from({ length: Math.ceil(course.words.length / 20) }, (_, index) => ({
     id: `${course.id}-${index + 1}`, number: index + 1,
     words: course.words.slice(index * 20, (index + 1) * 20),
