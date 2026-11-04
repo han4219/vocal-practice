@@ -16,11 +16,11 @@ export function shuffle(items, random = Math.random) {
 }
 export function recordReview(state, id, result, now = Date.now()) {
   const prev = state.words[id] || {};
-  const level = result === 'mastered' ? 5 : result === 'again' ? 1 : Math.min(5, (prev.level || 0) + 1);
+  const level = result === 'mastered' ? 5 : result === 'again' ? 1 : result === 'assisted' ? Math.max(1, prev.level || 0) : Math.min(5, (prev.level || 0) + 1);
   const today = dayKey(now);
   const activity = state.activity[today] || { ids: [], reviews: 0, correct: 0 };
-  return { ...state, words: { ...state.words, [id]: { ...prev, level, reviews: (prev.reviews || 0) + 1, nextReview: now + INTERVALS[level], lastReview: now } },
-    activity: { ...state.activity, [today]: { ids: [...new Set([...activity.ids, id])], reviews: activity.reviews + 1, correct: activity.correct + (result === 'again' ? 0 : 1) } } };
+  return { ...state, words: { ...state.words, [id]: { ...prev, level, reviews: (prev.reviews || 0) + 1, nextReview: Math.max(now, prev.lastReview || 0) + INTERVALS[level], lastReview: Math.max(now, prev.lastReview || 0) } },
+    activity: { ...state.activity, [today]: { ids: [...new Set([...activity.ids, id])], reviews: activity.reviews + 1, correct: activity.correct + (['again','assisted'].includes(result) ? 0 : 1) } } };
 }
 export function isDue(item, now = Date.now()) { return (item?.level || 0) > 0 && Number.isFinite(item.nextReview) && item.nextReview <= now; }
 export function streak(activity, now = Date.now()) {
@@ -49,7 +49,7 @@ export function validateState(raw, validIds) {
   for (const [id, value] of Object.entries(raw.words)) {
     if (!acceptedIds.has(id) || !value || typeof value !== 'object') continue;
     if (!Number.isInteger(value.level ?? 0) || (value.level ?? 0) < 0 || (value.level ?? 0) > 5) throw new Error('Cấp độ từ vựng không hợp lệ.');
-    state.words[id] = { level: value.level || 0, favorite: !!value.favorite, reviews: count(value.reviews), nextReview: Number.isFinite(value.nextReview) ? Math.max(0, value.nextReview) : 0, lastReview: Number.isFinite(value.lastReview) ? Math.max(0, value.lastReview) : 0 };
+    state.words[id] = { level: value.level || 0, favorite: !!value.favorite, reviews: count(value.reviews), nextReview: Number.isFinite(value.nextReview) ? Math.max(0, value.nextReview) : 0, lastReview: Number.isFinite(value.lastReview) ? Math.max(0, value.lastReview) : 0, seenAt: count(value.seenAt), favoriteAt: count(value.favoriteAt) };
   }
   for (const [day, value] of Object.entries(raw.activity)) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !value || !Array.isArray(value.ids)) continue;
@@ -57,5 +57,18 @@ export function validateState(raw, validIds) {
     state.activity[day] = { ids: [...new Set(value.ids.filter(id => acceptedIds.has(id)))], reviews, correct: Math.min(reviews, count(value.correct)) };
   }
   state.settings = { goal: [5, 10, 15, 20].includes(raw.settings.goal) ? raw.settings.goal : 10, accent: ['en-US','en-GB'].includes(raw.settings.accent) ? raw.settings.accent : 'en-US', rate: [0.7,0.9,1].includes(raw.settings.rate) ? raw.settings.rate : 0.9 };
+  state.settingsAt = count(raw.settingsAt);
+  state.history = Array.isArray(raw.history) ? raw.history.filter(e => e && typeof e.id === 'string' && acceptedIds.has(e.wordId) && Number.isFinite(e.at)).slice(-100) : [];
   return state;
+}
+
+export function groupsFor(course) {
+  return Array.from({ length: Math.ceil(course.words.length / 20) }, (_, index) => ({
+    id: `${course.id}-${index + 1}`, number: index + 1,
+    words: course.words.slice(index * 20, (index + 1) * 20),
+  }));
+}
+export function groupProgress(group, progress) {
+  const learned = group.words.filter(w => progress[w.id]?.level > 0).length;
+  return { learned, remaining: group.words.length - learned, complete: learned === group.words.length };
 }

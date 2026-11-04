@@ -1,13 +1,15 @@
 # Voca · Khu vườn từ vựng của bạn
 
-Ứng dụng React + Vite + Tailwind CSS + Lucide React, chạy hoàn toàn phía trình duyệt và sẵn sàng triển khai lên GitHub Pages bằng `gh-pages`.
+Ứng dụng React + Vite + Tailwind CSS + Lucide React, triển khai lên GitHub Pages bằng `gh-pages`. Đồng bộ giữa các thiết bị bằng Supabase Auth + PostgreSQL sau khi cấu hình.
+
+Hướng dẫn tạo database, phân quyền và lấy hai thông tin kết nối: [SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
 
 ## 1. Cài đặt và chạy trên máy
 
 Yêu cầu **Node.js 22.12+** (khuyên dùng Node 22 LTS), npm và Git. File `.nvmrc` đã chọn Node 22. Node mặc định trên máy có thể là phiên bản 18; hãy chuyển phiên bản trước khi cài.
 
 ```bash
-cd "/Users/dabeeovina/Documents/voca practice"
+cd "/Users/dabeeovina/Documents/vocal-practice"
 
 # Nếu dùng nvm:
 nvm install
@@ -17,7 +19,7 @@ npm install
 npm run dev
 ```
 
-Mở địa chỉ Local mà Vite in ra (mặc định `http://127.0.0.1:5173`). Dừng bằng `Ctrl+C`. Thư mục có khoảng trắng nên luôn đặt đường dẫn trong dấu ngoặc kép.
+Mở địa chỉ Local mà Vite in ra (mặc định `http://127.0.0.1:5173`). Dừng bằng `Ctrl+C`. Thư mục có đường dẫn trong dấu ngoặc kép khi có khoảng trắng.
 
 ```bash
 npm test          # Kiểm tra dữ liệu, lịch ôn, câu hỏi và nhập bản sao lưu
@@ -31,6 +33,7 @@ Sau khi đã có `package-lock.json`, có thể dùng `npm ci` cho các lần c�
 
 - Dashboard với mục tiêu học 5 / 10 / 15 / 20 từ, chuỗi ngày học và bộ từ theo khóa học nguồn.
 - Flashcard lật hai mặt: từ, IPA, nghĩa, ví dụ và bản dịch. Tự đánh giá “Chưa nhớ” / “Mình nhớ rồi”.
+- Trong bài viết lại: nút **Xem gợi ý** mở popup từ/IPA, đóng popup rồi tự viết; **Làm lại từ này** có ở cả câu sai và câu đúng. Lượt có gợi ý/làm lại vẫn lưu nhưng không tự tăng cấp liên tục.
 - Phát âm từ hoặc cả câu bằng `window.speechSynthesis`, chọn ưu tiên Anh Mỹ / Anh Anh và tốc độ đọc.
 - Trắc nghiệm chọn nghĩa, điền từ vào câu và bài luyện kết hợp. Câu có từ biến hình hoặc không chứa nguyên cụm từ chuyển sang viết từ dựa vào nghĩa; không cắt dở một phần từ.
 - Khóa đáp án sau khi trả lời, hiển thị lời giải và ví dụ. Tổng kết phiên học, luyện lại riêng các từ chưa nhớ.
@@ -41,9 +44,9 @@ Sau khi đã có `package-lock.json`, có thể dùng `npm ci` cho các lần c�
 - Biểu đồ 7 ngày, phân bố 5 tầng ghi nhớ, xuất/nhập tiến độ dưới dạng JSON.
 - Responsive cho desktop/mobile, hỗ trợ điều hướng bàn phím, giảm chuyển động theo thiết lập của hệ điều hành và thông báo khi không lưu được dữ liệu.
 
-Bàn phím trong flashcard khi không đặt tiêu điểm vào nút/ô nhập: `Space` để lật, `1` chưa nhớ, `2` nhớ rồi, `→` tiếp tục sau đánh giá. Có nút thao tác đầy đủ trên điện thoại. `Esc` đóng hộp xem từ hoặc menu.
+Bàn phím trong flashcard khi không đặt tiêu điểm vào nút/ô nhập: `Space` để lật, `1` chưa nhớ, `2` nhớ rồi, `←` / `→` đi tới/lùi ngay cả khi chưa đánh giá; thẻ đã đánh giá giữ kết quả khi quay lại, không lưu trùng lượt. Có nút thao tác đầy đủ trên điện thoại. `Esc` đóng hộp xem từ hoặc menu.
 
-Mỗi phiên lấy tối đa số từ bằng mục tiêu ngày, ưu tiên từ đến hạn, tiếp đến từ mới, rồi từ đã học. Số từ trong mục tiêu mỗi ngày là **số mục từ khác nhau đã ôn**, không cộng lặp khi ôn nhiều lần cùng một từ. Chuỗi ngày học dùng ngày theo giờ địa phương của thiết bị.
+Flashcard trong mỗi khóa được chia thành nhóm cố định tối đa 20 từ, giữ thứ tự để có thể đi tới/lùi và học lại cả nhóm hoặc chỉ từ chưa học. Nhóm cuối có thể ít hơn 20 từ. Nhóm được tạo theo thứ tự dữ liệu hiện tại; thêm/bớt từ khi cập nhật nguồn có thể thay đổi ranh giới nhóm, nhưng tiến độ từng ID từ vẫn giữ. Mỗi phiên kiểm tra lấy tối đa số từ bằng mục tiêu ngày, ưu tiên từ đến hạn, tiếp đến từ mới, rồi từ đã học. Số từ trong mục tiêu mỗi ngày là **số mục từ khác nhau đã ôn**, không cộng lặp khi ôn nhiều lần cùng một từ. Chuỗi ngày học dùng ngày theo giờ địa phương của thiết bị.
 
 ## 3. Dữ liệu thật từ Google Sheets
 
@@ -101,7 +104,7 @@ Trên GitHub tạo repository mới, ví dụ `voca-practice`, để trống (kh
 ### Bước 2 — Đưa mã nguồn lên nhánh main
 
 ```bash
-cd "/Users/dabeeovina/Documents/voca practice"
+cd "/Users/dabeeovina/Documents/vocal-practice"
 git init
 git branch -M main
 git add .
@@ -193,7 +196,7 @@ voca practice/
 
 ## 6. Phạm vi và lưu ý sử dụng
 
-- Không cần backend, tài khoản hay cơ sở dữ liệu. Tiến độ lưu theo trình duyệt, không tự đồng bộ giữa thiết bị hoặc tab. Nên xuất bản sao lưu định kỳ.
+- Chưa cấu hình Supabase hoặc chưa đăng nhập: lưu tiến độ trên máy. Đã cấu hình và đăng nhập: tự lưu database và đồng bộ giữa thiết bị, có hàng đợi khi mất mạng. Cần tạo project và làm theo tài liệu setup; không cần dựng API backend riêng. Bản sao lưu thủ công vẫn dùng được khi cần.
 - Phát âm phụ thuộc hỗ trợ Web Speech, giọng tiếng Anh của hệ điều hành và có thể cần Internet. Việc phát âm đã nối API và xử lý lỗi, nhưng giọng thực tế cần nghe trên thiết bị của bạn.
 - Không có thông báo đẩy hay nhắc lịch khi đã đóng website. Lịch đến hạn cập nhật mỗi 30 giây khi ứng dụng đang mở.
 - Tệp dữ liệu nguồn và bản build sẽ đọc được công khai khi đưa repository/website lên public. Chỉ đưa dữ liệu bạn được phép sử dụng vào repository.
