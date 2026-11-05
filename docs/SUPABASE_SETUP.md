@@ -25,7 +25,8 @@ Nguồn: [Supabase Auth](https://supabase.com/docs/guides/auth/passwords), [RLS]
 2. Dán toàn bộ tệp `supabase/migrations/001_learning.sql` của dự án.
 3. Nhấn **Run** bằng tài khoản chủ project.
 4. Chạy tiếp `supabase/migrations/002_fixed_catalog.sql`, sau đó `supabase/seeds/003_catalog.sql` để lưu kho từ và 511 nhóm cố định. Đây là dữ liệu công khai của bài học, tách biệt với tiến độ riêng.
-5. Xác nhận có bảng `voca_profiles`, `voca_events` và hàm `voca_apply_operation` trong schema `public`.
+5. Chạy thêm `supabase/migrations/004_manual_sync_lessons.sql` để bật đồng bộ theo lô và bài học riêng.
+6. Xác nhận có bảng `voca_profiles`, `voca_events` và hàm `voca_apply_operation` trong schema `public`.
 
 Script tạo RLS: mỗi tài khoản chỉ đọc bản ghi có `user_id` của chính mình. Client không được cập nhật/xóa bảng trực tiếp; mọi thay đổi đi qua hàm transaction xác định UID từ phiên đăng nhập. Khóa UUID của mỗi thao tác đảm bảo gửi lại sau lỗi mạng không cộng trùng lượt học. Có thể chạy lại script mà không xóa dữ liệu cũ.
 
@@ -76,9 +77,9 @@ Thử luồng này trước khi deploy:
 
 1. Học một từ khi chưa đăng nhập.
 2. Đăng nhập tài khoản thử, nhấn **Đưa tiến độ có sẵn lên tài khoản** một lần.
-3. Học thêm, kiểm tra dòng **Đã đồng bộ** và bảng `voca_events` có lượt trả lời.
+3. Học thêm, xác nhận thấy thay đổi đang chờ và chỉ lưu trên máy. Bấm **Đồng bộ**, kiểm tra dòng **Đã đồng bộ** và bảng `voca_events` có lượt trả lời.
 4. Mở trình duyệt/thiết bị khác, đăng nhập cùng tài khoản; tiến độ phải khớp mà không xuất/nhập JSON.
-5. Ngắt mạng, trả lời một câu, tải lại khi vẫn đang ở trang đã tải được; bản lưu/outbox phải còn. Kết nối mạng lại, đảm bảo lượt đó chỉ xuất hiện một lần trên database.
+5. Ngắt mạng, trả lời một câu, tải lại khi vẫn đang ở trang đã tải được; bản lưu/outbox phải còn. Kết nối mạng lại, bấm Đồng bộ rồi đảm bảo lượt đó chỉ xuất hiện một lần trên database. Không có upload tự động khi có mạng lại.
 6. Tài khoản B không được đọc tiến độ tài khoản A. Các kiểm thử PostgreSQL tự động cũng đã kiểm tra trường hợp này.
 
 Bản website chưa có service worker: không cam kết tải mới toàn bộ website khi hoàn toàn offline. “Offline” ở đây là tiếp tục học trên trang đã mở và giữ các thao tác chưa gửi.
@@ -99,13 +100,13 @@ Nếu hai biến chưa được điền, website vẫn hoạt động ở chế 
 - `voca_events`: lưu **mọi thao tác mới**, gồm mỗi lượt trả lời, kết quả đúng/sai, nội dung đã nhập, chế độ, gợi ý, lượt làm lại, phiên học, nhóm và ngày địa phương. Không tự xóa lịch sử cũ. Giao diện tiến độ chỉ hiện 20 lượt gần nhất; toàn bộ vẫn có trong bảng này.
 - Database khóa bản ghi tiến độ của một tài khoản trong transaction khi áp dụng thao tác; các thiết bị không ghi đè cả snapshot của nhau.
 - Client giữ từng thao tác chưa gửi trong một khóa localStorage riêng theo tài khoản + UUID. Đóng/mở lại trang không mất hàng đợi; lỗi mạng hoặc lỗi database hiển thị trạng thái chờ, không báo “Đã đồng bộ” giả.
-- Khi online, các thao tác được gửi tự động. Tải lại từ server sau khi gửi, khi cửa sổ lấy focus, mỗi 30 giây và qua Realtime khi bật được. Realtime không hoạt động thì polling vẫn hoạt động.
+- Các thao tác chỉ gửi khi người dùng bấm Đồng bộ, tối đa 100 thao tác mỗi RPC `voca_sync_operations`. Mỗi lô là một transaction, trả trạng thái kèm ID đã xác nhận; lô lỗi được giữ lại để thử tiếp. Không polling, tự gửi khi online/focus hay Realtime tiến độ. Mở trang/đăng nhập chỉ đọc một lần, luôn áp lại hàng chờ local. Khi không có thay đổi, nút Đồng bộ tải trạng thái mới nhất.
 - Đăng xuất không xóa hàng đợi đang chờ; tài khoản khác dùng bộ cache riêng. Đồng bộ cần Internet và phiên đăng nhập hợp lệ.
 - Dữ liệu local trước bản nâng cấp chỉ có thống kê tổng hợp. Nút chuyển dữ liệu giữ các tổng đó bằng phép gộp lấy giá trị lớn hơn, không cộng lại cùng bản sao lưu. Không thể tái tạo các câu trả lời từng lượt mà bản cũ chưa từng lưu.
 - Nút làm lại và gợi ý đều giữ lịch sử, nhưng câu đúng sau gợi ý/làm lại ngay không tăng cấp ghi nhớ liên tục. Chỉ xem flashcard/đi tới/lùi ghi “Đã xem”, chưa tính “Đã học”.
 - Hiện snapshot mỗi người dùng giới hạn 8 MB trong hàm để đồng nhất với giới hạn nhập backup. Lịch sử đầy đủ nằm riêng trong `voca_events`; với quy mô lớn hơn có thể tách tiếp snapshot thành các bảng từng từ/ngày.
 
-Kiểm thử database dùng PostgreSQL trong bộ nhớ qua PGlite; không kết nối hoặc thay đổi database production. Luồng đăng nhập/email/realtime của Supabase thật vẫn cần chạy kiểm tra sau khi có project và cấu hình.
+Kiểm thử database dùng PostgreSQL trong bộ nhớ qua PGlite; không kết nối hoặc thay đổi database production. Luồng đăng nhập/email và đồng bộ thủ công với Supabase thật vẫn cần chạy kiểm tra sau khi có project và cấu hình.
 
 
 ## Cập nhật kho từ và nhóm cố định
@@ -115,3 +116,9 @@ Kho từ học từ `voca_get_catalog()` trong Supabase, với 4 bảng `voca_vo
 `npm run sync:vocab` (hoặc `npm run catalog:prepare` nếu không tải Sheets) tạo lại `supabase/seeds/003_catalog.sql`. Chạy seed bằng tài khoản quản trị trong SQL Editor rồi deploy mã nguồn nếu thay đổi giao diện/bản chụp. Từ mới chỉ thêm vào nhóm mới, không lấp nhóm cũ hay đẩy vị trí. Đừng xóa `src/data/course-groups.json` để chia lại nhóm. Từ bị bỏ khỏi Sheet nhưng đã có trong nhóm được giữ để bảo toàn nội dung và tiến độ.
 
 API danh mục là chỉ đọc với cả `anon` và `authenticated`; hàm nhập nội dung chỉ chủ database được chạy. Lớp kiểm tra trong database từ chối đổi danh sách/thứ tự nhóm cũ, nên nhập lại seed không làm mất tính cố định.
+
+## Bài học riêng và cảnh báo rời trang
+
+Bài học nằm trong `voca_profiles.state.lessons`, gồm ID, tên, link, danh sách ID từ theo thứ tự, thời gian chỉnh sửa và mã phiên bản. Sự kiện `lesson` được lưu trong `voca_events` cùng các thao tác khác; chỉ người sở hữu được đọc. Chỉnh sửa mới hơn được ưu tiên, ẩn bài giữ bản ghi để có thể khôi phục và tránh bản sao cũ làm bài hiện lại. Backup/import và chuyển dữ liệu khách cũng giữ các bài học này.
+
+`beforeunload` dùng cảnh báo tiêu chuẩn của trình duyệt khi còn thay đổi tài khoản chưa đồng bộ; website không điều khiển nội dung hay nút của hộp thoại này. Tất cả thay đổi đã được lưu vào hàng chờ trình duyệt trước đó, kể cả khi thiết bị không hiện cảnh báo. Không đưa token vào URL hoặc gửi request thiếu xác nhận khi trang đóng. Bài học mẫu phục vụ kiểm thử chỉ dùng database PostgreSQL trong bộ nhớ.

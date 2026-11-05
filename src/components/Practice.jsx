@@ -1,7 +1,7 @@
 import { ListChecks, PenLine, Shuffle, ArrowRight, Sparkles } from 'lucide-react';
-import { courses, vocabulary, formatNumber } from '../data/catalog';
+import { vocabulary, formatNumber } from '../data/catalog';
 import { groupsFor } from '../lib/learning';
-export default function Practice({ start, state, dueWords, selection, onSelectionChange }) {
+export default function Practice({ courses, start, state, dueWords, selection, onSelectionChange }) {
   const {mode,deck,number} = selection;
   const change = values => onSelectionChange({...selection,...values});
   const options = [
@@ -16,11 +16,11 @@ export default function Practice({ start, state, dueWords, selection, onSelectio
   const selectedTitle = course ? `${course.title} · Nhóm ${group?.number}` : deck==='due' ? 'Ôn tập đến hạn' : 'Những từ đã học';
   const count = group ? selectedWords.length : Math.min(state.settings.goal,selectedWords.length);
   return <>
-    <div className="page-intro"><div><span className="eyebrow">THỬ MỘT CHÚT, NHỚ THÊM NHIỀU</span><h1>Góc luyện tập<span className="heading-dot">.</span></h1><p>Chọn một nhóm từ quen thuộc và luyện lại theo đúng thứ tự.</p></div></div>
+    <div className="page-intro"><div><span className="eyebrow">THỬ MỘT CHÚT, NHỚ THÊM NHIỀU</span><h1>Góc luyện tập<span className="heading-dot">.</span></h1><p>Chọn nhóm từ, bộ yêu thích hoặc bài học riêng để luyện đúng những từ bạn cần.</p></div></div>
     <div className="practice-layout"><div><h2 className="subheading">1. Chọn cách bạn muốn luyện</h2><div className="practice-modes">{options.map(o=><button className={`practice-mode ${mode===o.id?'selected':''}`} onClick={()=>change({mode:o.id})} key={o.id} aria-pressed={mode===o.id}><span className="mode-icon"><o.icon size={24}/></span><span><h3>{o.title}</h3><p>{o.description}</p></span><span className="radio-dot"/></button>)}</div>
       <h2 className="subheading mt-8">2. Chọn bộ từ và nhóm cố định</h2>
       <label className="field-label" htmlFor="practice-deck">Bộ từ</label><select id="practice-deck" className="w-full" value={deck} onChange={e=>change({deck:e.target.value,number:1})}>
-        {[...courses].reverse().map(c=><option value={c.id} key={c.id}>{c.title} ({formatNumber(c.words.length)} từ)</option>)}
+        {[...courses].filter(c=>!c.sourceLesson||c.id===deck).reverse().map(c=><option value={c.id} key={c.id}>{c.title} ({formatNumber(c.words.length)} từ)</option>)}
         <option value="due">Từ đến hạn ôn ({dueWords.length})</option><option value="learned">Những từ đã học</option>
       </select>
       {group?<><label className="field-label mt-5" htmlFor="practice-group">Nhóm từ</label><select id="practice-group" className="w-full" value={group.number} onChange={e=>change({number:Number(e.target.value)})}>{groups.map(g=><option key={g.id} value={g.number}>Nhóm {g.number} · {g.words.length} từ · bắt đầu: {g.words[0]?.word}</option>)}</select><p className="fine-print mt-3">Cùng một nhóm luôn có cùng danh sách và thứ tự từ, ở cả flashcard lẫn bài luyện tập.</p><details className="practice-word-preview"><summary>Xem {group.words.length} từ trong nhóm</summary><ol>{group.words.map(w=><li key={w.id}>{w.word}</li>)}</ol></details></>:<p className="fine-print mt-3">Danh sách ôn cá nhân thay đổi theo tiến độ học và ngày đến hạn của bạn.</p>}

@@ -14,7 +14,8 @@
     "sync:vocab": "node scripts/sync-vocabulary.mjs",
     "predeploy": "npm run test && npm run build",
     "deploy": "gh-pages -d dist --nojekyll",
-    "catalog:prepare": "node scripts/prepare-catalog.mjs"
+    "catalog:prepare": "node scripts/prepare-catalog.mjs",
+    "lessons:prepare": "node scripts/prepare-lessons.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

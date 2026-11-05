@@ -48,6 +48,20 @@ Bàn phím trong flashcard khi không đặt tiêu điểm vào nút/ô nhập: 
 
 Flashcard trong mỗi khóa được chia thành nhóm cố định tối đa 20 từ, giữ thứ tự để có thể đi tới/lùi và học lại cả nhóm hoặc chỉ từ chưa học. Nhóm cuối có thể ít hơn 20 từ. Từ, nhóm và vị trí trong nhóm được lưu trong Supabase. Mở lại cùng nhóm luôn có cùng danh sách và thứ tự; chọn nhóm được giữ trong URL, ví dụ `#course/B1.02/2`. Bài luyện tập có bộ chọn nhóm và dùng đầy đủ danh sách nhóm đó, không lấy mẫu ngẫu nhiên theo mục tiêu ngày. Cập nhật nguồn chỉ thêm nhóm mới; các nhóm cũ, kể cả nhóm cuối chưa đủ 20 từ, giữ nguyên thành viên. Từ đã gắn vào nhóm nhưng bị xóa ở nguồn vẫn được giữ trong bản chụp để không mất nội dung và tiến độ. Danh sách ôn cá nhân theo ngày đến hạn vẫn thay đổi theo kết quả học. Số từ trong mục tiêu mỗi ngày là **số mục từ khác nhau đã ôn**, không cộng lặp khi ôn nhiều lần cùng một từ. Chuỗi ngày học dùng ngày theo giờ địa phương của thiết bị.
 
+## Đồng bộ thủ công, từ yêu thích và bài học riêng
+
+- Mọi thao tác học, đánh dấu sao và chỉnh sửa bài được lưu ngay trên trình duyệt theo từng tài khoản. **Chỉ bấm Đồng bộ** ở góc trên hoặc trong Tùy chỉnh mới gửi lên Supabase. Ứng dụng không tự gửi khi lấy focus, có mạng lại hoặc sau mỗi câu trả lời; không còn polling tiến độ 30 giây/Realtime.
+- Mỗi request gửi tối đa **100 thao tác**, trả lại trạng thái và danh sách xác nhận ngay trong cùng response. Ví dụ 80 thay đổi chỉ cần một request ghi tiến độ. Các thao tác được lưu đầy đủ trong `voca_events`; thử lại không cộng trùng.
+- Khi mở trang/đăng nhập, ứng dụng đọc tiến độ tài khoản một lần và áp các thay đổi còn chờ trên máy. Bấm Đồng bộ khi không có thay đổi để tải dữ liệu mới nhất từ thiết bị khác. Thao tác phát sinh trong lúc đang đồng bộ chờ lần bấm tiếp theo.
+- Nếu đóng hoặc tải lại trang khi tài khoản còn thay đổi chưa đồng bộ, trình duyệt hiện cảnh báo rời trang tiêu chuẩn. Một số trình duyệt di động không đảm bảo hiện cảnh báo; hàng chờ đã được lưu ngay trên máy để phục hồi khi mở lại. Không gửi request bất đồng bộ lúc đóng trang. Đăng xuất cũng cảnh báo và giữ hàng chờ riêng cho tài khoản cũ.
+- **Bộ từ yêu thích** nằm trong Khu vườn và danh sách bộ từ ở Luyện tập. Tìm từ trong Sổ từ vựng, nhấn ngôi sao rồi chọn học/luyện bộ này. Thứ tự theo lần thêm yêu thích, nhóm tối đa 20 từ. Khi chính bạn thêm/bỏ sao, nội dung nhóm yêu thích được cập nhật; 511 nhóm khóa học gốc vẫn cố định.
+- Menu **Từ vựng theo bài học** cho phép tạo tên bài, gắn link eVSTEP, tìm từng từ và chọn đúng nghĩa, lấy từ yêu thích hoặc dán danh sách mỗi dòng một từ. Từ có nhiều nghĩa cần chọn riêng, từ chưa có trong kho được thông báo thay vì tự ghép sai. Mỗi bài tối đa 1.000 từ, học flashcard và luyện tập theo nhóm 20 từ; có chỉnh sửa, ẩn và khôi phục. Bấm Lưu bài học lưu trên máy, bấm Đồng bộ để lưu lên tài khoản.
+- Tab **Danh mục eVSTEP** có 537 danh mục ghép từ các đường dẫn `Danh mục nguồn` trong CSV. Tìm bằng link glossary (kể cả `forceview=1`), mã số hoặc từ; học trực tiếp hoặc sao chép thành bài của mình để đặt tên. Nguồn không có tên bài hay ánh xạ bài nghe/đọc/viết cụ thể nên chỉ hiển thị mã danh mục, không tự đặt số Unit. Dùng đúng link `/mod/thglossary/view.php?id=...`, không phải link khóa học/quiz bất kỳ.
+
+Chủ project chạy thêm `supabase/migrations/004_manual_sync_lessons.sql` trước khi deploy bản mới. Tệp này bổ sung RPC `voca_sync_operations`, loại sự kiện `lesson` và dữ liệu bài riêng trong `voca_profiles.state.lessons`, giữ nguyên bảng tiến độ, lịch sử, phân quyền theo tài khoản và nhóm từ gốc. Chạy lại an toàn.
+
+Tái tạo danh mục bài từ CSV đã lưu: `npm run lessons:prepare`. `npm run sync:vocab` cũng gọi bước này sau khi cập nhật từ nguồn.
+
 ## 3. Dữ liệu thật từ Google Sheets
 
 Nguồn: [Vocabulary cần nhớ — tab Từ vựng, gid=0](https://docs.google.com/spreadsheets/d/18AO8DQRxVdA8ORhFcFTVzIcLVdtPvGmxxdciKQ7TLvc/edit?gid=0).

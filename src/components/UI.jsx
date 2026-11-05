@@ -1,5 +1,5 @@
 import { Volume2, Star, X, Sprout, ArrowRight, BookOpen, Layers, Sparkles, GraduationCap, Headphones, PenLine, MessagesSquare } from 'lucide-react';
-export const icons = { Sprout, BookOpen, Layers, Sparkles, GraduationCap, Headphones, PenLine, MessagesSquare };
+export const icons = { Star, Sprout, BookOpen, Layers, Sparkles, GraduationCap, Headphones, PenLine, MessagesSquare };
 export function Icon({ name, ...props }) { const Component = icons[name] || BookOpen; return <Component {...props} />; }
 export function ProgressBar({ value, label, className = '' }) { return <div className={`progress-track ${className}`} role="progressbar" aria-label={label} aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${Math.min(100, Math.max(0, value))}%` }} /></div>; }
 export function Empty({ title, description, action, label }) { return <div className="empty-state"><div className="empty-icon"><Sprout size={34} /></div><h3>{title}</h3><p>{description}</p>{action && <button className="btn primary" onClick={action}>{label || 'Khám phá bộ từ'}<ArrowRight size={17}/></button>}</div>; }

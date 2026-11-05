@@ -1,7 +1,16 @@
+import { mergeLessons } from './lessons.js';
 import { defaultState, recordReview, dayKey } from './learning.js';
 export function operation(kind, payload) {
   const at = Date.now();
   return { id: crypto.randomUUID(), kind, payload, at, day: dayKey(at) };
+}
+export function guestImport(guest) {
+  const op=operation('import',{state:guest.base});
+  op.id=guest.importId;
+  // The baseline must precede its queued reviews even after queue sorting.
+  op.at=Math.max(0,guest.queue.reduce((min,item)=>Math.min(min,item.at),op.at)-1);
+  op.day=dayKey(op.at);
+  return op;
 }
 export function mergeProgress(current, incoming) {
   const result = { ...current, words: { ...current.words }, activity: { ...current.activity } };
@@ -19,12 +28,17 @@ export function mergeProgress(current, incoming) {
     result.settings = incoming.settings;
     result.settingsAt = incoming.settingsAt || 0;
   }
+  result.lessons = mergeLessons(current.lessons,incoming.lessons);
   result.history = [...new Map([...(incoming.history || []), ...(current.history || [])].map(h => [h.id, h])).values()].sort((a,b)=>a.at-b.at).slice(-100);
   return result;
 }
 export function applyOperation(state, op) {
   const p = op.payload;
   if (op.kind === 'import') return mergeProgress(state, p.state);
+  if (op.kind === 'lesson') {
+    const lesson={...p,updatedAt:op.at,revision:op.id};
+    return {...state,lessons:mergeLessons(state.lessons,{[p.id]:lesson})};
+  }
   if (op.kind === 'settings') return { ...state, settings: { ...state.settings, ...p }, settingsAt: op.at };
   const prior = state.words[p.wordId] || {};
   if (op.kind === 'seen') return { ...state, words: { ...state.words, [p.wordId]: { ...prior, seenAt: Math.max(op.at, prior.seenAt || 0) } } };

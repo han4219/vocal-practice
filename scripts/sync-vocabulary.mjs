@@ -79,3 +79,5 @@ if (!offline) await writeFile(new URL('source.csv', root), raw);
 console.log(`Imported ${metadata.sourceEntries} source entries + ${added} new phrases = ${vocabulary.length}. All required fields complete.`);
 
 await import('./prepare-catalog.mjs');
+
+await import('./prepare-lessons.mjs');

@@ -1,7 +1,8 @@
+import { validateLessons } from './lessons.js';
 export const LEVELS = ['Chưa học', 'Làm quen', 'Đang nhớ', 'Khá vững', 'Ghi nhớ tốt', 'Đã thuộc'];
 export const INTERVALS = [0, 10 * 60000, 86400000, 3 * 86400000, 7 * 86400000, 21 * 86400000];
 export const STORAGE_KEY = 'voca-garden-v1';
-export const defaultState = () => ({ version: 1, words: {}, activity: {}, settings: { goal: 10, accent: 'en-US', rate: 0.9 } });
+export const defaultState = () => ({ version: 1, words: {}, activity: {}, lessons: {}, settings: { goal: 10, accent: 'en-US', rate: 0.9 } });
 export function dayKey(time = Date.now()) {
   const d = new Date(time);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -57,6 +58,7 @@ export function validateState(raw, validIds) {
     state.activity[day] = { ids: [...new Set(value.ids.filter(id => acceptedIds.has(id)))], reviews, correct: Math.min(reviews, count(value.correct)) };
   }
   state.settings = { goal: [5, 10, 15, 20].includes(raw.settings.goal) ? raw.settings.goal : 10, accent: ['en-US','en-GB'].includes(raw.settings.accent) ? raw.settings.accent : 'en-US', rate: [0.7,0.9,1].includes(raw.settings.rate) ? raw.settings.rate : 0.9 };
+  state.lessons = validateLessons(raw.lessons,acceptedIds);
   state.settingsAt = count(raw.settingsAt);
   state.history = Array.isArray(raw.history) ? raw.history.filter(e => e && typeof e.id === 'string' && acceptedIds.has(e.wordId) && Number.isFinite(e.at)).slice(-100) : [];
   return state;
